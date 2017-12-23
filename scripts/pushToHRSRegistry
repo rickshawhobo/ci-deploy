@@ -1,0 +1,23 @@
+#!/usr/bin/env php
+<?php
+
+require_once __DIR__ . "/../vendor/autoload.php";
+
+use HRS\Ci\Builder;
+use HRS\Ci\HRSRegistry;
+
+$longOpts  = [
+    "tag-suffix:",
+    "version:",
+
+];
+$opts = getopt(null, $longOpts);
+
+$tagSuffix = !empty($opts['tag-suffix']) ? $opts['tag-suffix'] : null;
+$version = !empty($opts['version']) ? $opts['version'] : null;
+
+$HRSRegistry = new HRSRegistry();
+$runnerTag = Builder::getLocalImageTag($tagSuffix);
+$registryTag =  $HRSRegistry->tagForPushing($runnerTag, $tagSuffix, $version);
+
+$HRSRegistry->push($registryTag);

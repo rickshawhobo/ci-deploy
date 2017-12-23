@@ -1,0 +1,58 @@
+#!/usr/bin/env php
+<?php
+
+require_once __DIR__ . "/../vendor/autoload.php";
+use HRS\Ci\AwsDeploy;
+
+
+$longOpts  = [
+    "env:",
+    "cluster:",
+    "cf:"
+
+];
+$opts = getopt(null, $longOpts);
+
+if ($opts['env'] != 'live') {
+
+    echo "nothing to deploy for now";
+    exit(0);
+}
+
+$prefix = $opts['env'] . "-";
+$srvName = getenv('SRV_NAME');
+$account = getenv('ECR_ACCOUNT_ID');
+$refName = getenv('CI_COMMIT_REF_NAME');
+$buildType = getenv('BUILD_TYPE');
+
+$cluster = $prefix . $opts['cluster'];
+$task = $prefix . 'td-' . $srvName;
+$service = $prefix. 'ecs-' . $srvName;
+$image = $prefix . 'ecr-' . $srvName . ":" . $refName;
+
+$d = new AwsDeploy();
+if ($buildType == 'gulp') {
+    $cloudFrontId = $opts['cf'];
+    $s3Bucket = $prefix . 's3-' . $srvName;
+
+    $env = $opts['env'];
+
+    $d->cfDeploy($env, $s3Bucket, $cloudFrontId);
+
+} elseif ($buildType == 'composer') {
+    $d->composerDeploy($opts['env'], $cluster, $service, $task, $image, $account);
+} elseif ($buildType == 'mvn') {
+    $srvMulti = getenv('SRV_MULTI');
+    if ($srvMulti) {
+        echo "Working on a multi-tenant project:\n";
+        $services = explode(' ', $srvMulti);
+        echo var_export($services, true);
+        $service = [
+                'name' => $service,
+                'services' => $services
+        ];
+    }
+    $d->mvnDeploy($opts['env'], $cluster, $service, $task, $image, $account);
+} else {
+    $d->genericDeploy('live', $cluster, $service, $task, $image, $account);
+}

@@ -1,0 +1,21 @@
+#!/usr/bin/env php
+<?php
+require_once __DIR__ . "/../vendor/autoload.php";
+
+use HRS\Ci\ComposerTest;
+use HRS\Ci\GulpTest;
+
+$buildType = getenv('BUILD_TYPE');
+
+if ($buildType == 'gulp') {
+    $tester = new GulpTest();
+    $tester->run();
+
+} elseif ($buildType == 'mvn') {
+    echo "// no maven tests";
+} elseif ($buildType == 'composer') {
+    $tester = new ComposerTest();
+    $tester->run();
+}
+
+

@@ -1,0 +1,47 @@
+#!/usr/bin/env php
+<?php
+require_once __DIR__ . "/../vendor/autoload.php";
+use HRS\Ci\GulpBuilder;
+use HRS\Ci\ComposerBuilder;
+use HRS\Ci\HRSDockerBuilder;
+use HRS\Ci\MvnBuilder;
+use HRS\Ci\Builder;
+
+$longOpts  = [
+    "path:",
+    "file:",
+    "tag-suffix:",
+
+];
+
+$opts = getopt(null, $longOpts);
+//$path = $opts['path'];
+
+
+$buildType = getenv('BUILD_TYPE');
+
+if ($buildType == 'gulp') {
+    $builder = new GulpBuilder();
+    $builder->build();
+
+} elseif ($buildType == 'mvn') {
+
+    $builder = new MvnBuilder();
+    $builder->build();
+
+} elseif ($buildType == 'composer') {
+    $builder = new ComposerBuilder();
+    $builder->build();
+
+} elseif ($buildType == 'hrsdocker') {
+    if (empty($opts['file'])) {
+        throw new Exception("Missing --file value.");
+    }
+    $builder = new HRSDockerBuilder();
+    $dockerFile = $opts['file'];
+    $tagSuffix = !empty($opts['tag-suffix']) ? $opts['tag-suffix'] : null;
+    $builder->build($dockerFile, $tagSuffix);
+} else {
+    $builder = new Builder();
+    $builder->build();
+}

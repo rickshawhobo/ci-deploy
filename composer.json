@@ -1,0 +1,23 @@
+{
+    "name": "hrs/ci",
+    "description": "",
+    "keywords": ["template", "composer", "package"],
+    "authors": [
+        {
+            "name": "Guy Huynh",
+            "email": "ghuynh@healthrecoverysolutions.com"
+        }
+    ],
+    "type": "project",
+    "require": {
+		"php": ">=5.4"
+    },
+	"require-dev": {
+		"phpunit/phpunit": "5.2.*"
+    },
+	"autoload": {
+        "psr-4": {
+            "HRS\\Ci\\": "src/"
+        }
+    }
+}
